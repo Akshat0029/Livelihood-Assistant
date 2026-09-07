@@ -6,12 +6,14 @@ from app.services.speech.transcriber import (
     BaseSpeechTranscriptionService,
     SpeechTranscriptionService,
 )
+from app.services.speech.providers import WhisperASRProvider
+from app.core.config import settings
 
 router = APIRouter(prefix="/speech", tags=["Speech & Voice"])
 
 
 def get_speech_service() -> BaseSpeechTranscriptionService:
-    return SpeechTranscriptionService()
+    return SpeechTranscriptionService(WhisperASRProvider(settings), settings)
 
 
 @router.post(

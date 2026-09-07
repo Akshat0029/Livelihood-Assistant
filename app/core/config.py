@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     BHASHINI_API_KEY: str = Field(default="", description="Bhashini ASR/TTS API key")
     BHASHINI_USER_ID: str = Field(default="", description="Bhashini User identifier")
     BHASHINI_PIPELINE_ID: str = Field(default="", description="Bhashini Pipeline identifier")
+    ASR_MODEL_PATH: str = Field(default="", description="Local path to a provisioned multilingual Whisper model")
+    ASR_MODEL_VERSION: str = "large-v3"
+    ASR_MAX_AUDIO_BYTES: int = Field(default=10_000_000, ge=1, le=100_000_000)
 
     # Regional / Rules Data Storage
     DATA_DIR: str = "./data"

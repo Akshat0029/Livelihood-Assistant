@@ -103,7 +103,7 @@ from app.schemas.market import (
 
 # Health & Speech
 from app.schemas.health import HealthResponse
-from app.schemas.speech import SpeechTranscribeRequest, SpeechTranscribeResponse
+from app.schemas.speech import SpeechProcessingMetadata, SpeechTranscribeRequest, SpeechTranscribeResponse
 
 __all__ = [
     # Phase 3 — Ontology & Provenance
@@ -186,4 +186,5 @@ __all__ = [
     "HealthResponse",
     "SpeechTranscribeRequest",
     "SpeechTranscribeResponse",
+    "SpeechProcessingMetadata",
 ]

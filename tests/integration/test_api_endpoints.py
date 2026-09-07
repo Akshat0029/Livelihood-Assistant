@@ -57,17 +57,17 @@ def test_recommendations_endpoint(client: TestClient):
 
 
 def test_speech_transcribe_endpoint(client: TestClient):
-    """Verify POST /v1/speech/transcribe handles valid payload and returns 501 placeholder."""
+    """Verify POST /v1/speech/transcribe reports missing local ASR configuration safely."""
     payload = {
         "audio_content_base64": "UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=",
         "language_code": "hi",
         "audio_format": "wav",
     }
     response = client.post("/v1/speech/transcribe", json=payload)
-    assert response.status_code == 501
+    assert response.status_code == 503
     data = response.json()
     assert data["success"] is False
-    assert "SpeechTranscriptionService.transcribe" in data["error"]["message"]
+    assert data["error"]["details"] == {"provider": "Whisper ASR"}
 
 
 def test_opportunities_parse_endpoint(client: TestClient):

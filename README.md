@@ -57,6 +57,10 @@ Only seed-backed evidence is used. Missing profile data produces `UNKNOWN` eligi
 
 `POST /v1/profile/extract` uses the environment-only `GEMINI_API_KEY` with Gemini JSON mode solely to extract stated beneficiary facts from multilingual text. Provider output is an untrusted payload: it is strictly Pydantic-validated, rejected on malformed or invalid values, and its raw skill phrases are normalized through Phase 4 before a canonical `BeneficiaryProfile` is returned. The response preserves the original text, raw skills, confidence, and model metadata. Gemini never produces recommendations or canonical opportunities, courses, eligibility, schemes, salaries, or market data.
 
+### Phase 7: Speech-to-text
+
+`POST /v1/speech/transcribe` accepts base64 WAV, MP3, OGG, or WebM audio, validates the declared type, decoded bytes, and configured size limit, then delegates to a replaceable ASR provider. The included local multilingual Whisper adapter requires an explicitly provisioned `ASR_MODEL_PATH`; it does not download models or datasets. Its transcript, selected/detected language, optional confidence, and processing metadata can be passed directly as the Phase 6 `raw_text` input.
+
 ---
 
 ## 🏗 Repository Structure
