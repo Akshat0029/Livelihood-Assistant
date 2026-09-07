@@ -18,6 +18,7 @@ graph TD
     Recommendation["Recommendation<br/>(Pathways, Multidimensional Scores, Top 3-5)"]
     SkillGap["Skill Gap<br/>(Current vs Target Proficiency, Priority)"]
     Roadmap["Roadmap<br/>(Ordered Milestone Steps & Duration)"]
+    Assessment["Livelihood Assessment<br/>(Structured orchestration)"]
     SourceEvidence["SourceEvidence<br/>(Traceability, Gazettes, Timezone-aware)"]
 
     Beneficiary -->|has| Skills
@@ -30,6 +31,10 @@ graph TD
     Opportunity -->|observed local counts| MarketEvidence["Market Observation Evidence<br/>(Repository-scoped, no forecast)"]
     Recommendation -->|identifies| SkillGap
     SkillGap -->|converted to| Roadmap
+    Recommendation --> Assessment
+    Opportunity --> Assessment
+    MarketEvidence --> Assessment
+    Roadmap --> Assessment
 
     SourceEvidence -.->|grounds| Beneficiary
     SourceEvidence -.->|grounds| Skills
@@ -63,6 +68,12 @@ graph TD
     RecRoute --> MatchService["SkillMatchingService"]
     MarketRoute --> MarketService["MarketDemandService"]
     RoadmapRoute --> RoadmapService["RoadmapService"]
+    Gateway --> AssessmentRoute["/v1/livelihood/assess"]
+    AssessmentRoute --> AssessmentService["LivelihoodAssessmentService"]
+    AssessmentService --> RecService
+    AssessmentService --> OppIntelligence
+    AssessmentService --> MarketEvidenceService
+    AssessmentService --> RoadmapService
     OppRoute --> OppIntelligence["Opportunity Intelligence<br/>(Normalization & Profile Matching)"]
     MarketRoute --> MarketEvidenceService["MarketDemandService<br/>(Active-record observation counts)"]
 

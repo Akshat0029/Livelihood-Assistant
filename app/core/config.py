@@ -54,6 +54,7 @@ class Settings(BaseSettings):
     RECOMMENDATION_LABOUR_DEMAND_WEIGHT: float = Field(default=0.10, ge=0.0, le=1.0)
     RECOMMENDATION_EMPLOYMENT_PREFERENCE_WEIGHT: float = Field(default=0.10, ge=0.0, le=1.0)
     RECOMMENDATION_MODEL_VERSION: str = "phase-5-deterministic-v1"
+    LIVELIHOOD_ASSESSMENT_VERSION: str = "phase-11-orchestrator-v1"
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod

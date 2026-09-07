@@ -111,6 +111,12 @@ from app.schemas.market import (
 from app.schemas.health import HealthResponse
 from app.schemas.speech import SpeechProcessingMetadata, SpeechTranscribeRequest, SpeechTranscribeResponse
 from app.schemas.interview import InterviewQuestion, InterviewSlot, InterviewTurnRequest, InterviewTurnResponse
+from app.schemas.livelihood import (
+    LivelihoodAssessRequest,
+    LivelihoodAssessResponse,
+    LivelihoodAssessmentMetadata,
+    LivelihoodPathwayAssessment,
+)
 
 __all__ = [
     # Phase 3 — Ontology & Provenance
@@ -205,4 +211,9 @@ __all__ = [
     "InterviewSlot",
     "InterviewTurnRequest",
     "InterviewTurnResponse",
+    # Livelihood assessment
+    "LivelihoodAssessRequest",
+    "LivelihoodAssessResponse",
+    "LivelihoodAssessmentMetadata",
+    "LivelihoodPathwayAssessment",
 ]

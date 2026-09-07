@@ -34,6 +34,23 @@ def test_interview_turn_validation_error(client: TestClient):
     assert response.status_code == 422
 
 
+def test_livelihood_assessment_endpoint_works_without_llm_or_asr(client: TestClient):
+    response = client.post("/v1/livelihood/assess", json={
+        "profile": {
+            "education_level": "primary", "traditional_skills": ["silai"],
+            "employment_preference": "wage_employment",
+            "location": {"state": "Demo State", "district": "Demo District"},
+        }
+    })
+    assert response.status_code == 200
+    assert response.json()["metadata"]["deterministic"] is True
+
+
+def test_livelihood_assessment_validation_error(client: TestClient):
+    response = client.post("/v1/livelihood/assess", json={"profile": {}, "max_recommendations": 4})
+    assert response.status_code == 422
+
+
 def test_profile_validate_endpoint(client: TestClient):
     """Verify POST /v1/profile/validate handles valid payload and returns 501 placeholder."""
     payload = {

@@ -8,6 +8,7 @@ from app.services.market.demand import MarketDemandService
 from app.services.roadmap.generator import RoadmapService
 from app.services.normalization.skill_normalizer import SkillNormalizationService
 from app.services.interview.service import LivelihoodInterviewService
+from app.services.livelihood.assessment import LivelihoodAssessmentService
 
 __all__ = [
     "ProfileExtractionService",
@@ -18,4 +19,5 @@ __all__ = [
     "RoadmapService",
     "SkillNormalizationService",
     "LivelihoodInterviewService",
+    "LivelihoodAssessmentService",
 ]

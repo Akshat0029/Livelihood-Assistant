@@ -73,6 +73,10 @@ Only seed-backed evidence is used. Missing profile data produces `UNKNOWN` eligi
 
 `POST /v1/opportunities/parse` normalizes only a trusted structured opportunity record. It preserves raw occupation/skill values, source evidence, lifecycle, verification state, and synthetic markers; raw announcement text alone is retained but not inferred into a vacancy. `POST /v1/opportunities/match` filters active records against canonical profile skills, location/mobility, employment preference, and an optional occupation ID. `POST /v1/market/demand` reports location-scoped counts of active repository records as observation evidence—not a demand forecast, trend, salary estimate, or statistical claim. Synthetic/demo records are clearly identified in its scope limitations.
 
+### Phase 11: End-to-end structured livelihood assessment
+
+`POST /v1/livelihood/assess` coordinates the existing deterministic skill normalization, recommendation, opportunity intelligence, market-observation, and roadmap services over one canonical repository snapshot. It accepts an already structured `BeneficiaryProfile`, so Gemini and ASR are not required. The response returns ranked pathways, matching opportunity evidence, the location-scoped observation summary, roadmaps, deduplicated source evidence, service/model metadata, and explicit limitations. It does not execute user text, expose configuration secrets, or invent data. Recommendations remain the existing deterministic/hybrid Phase 5 output; opportunity counts are repository observations rather than a labour-market forecast; synthetic/demo inputs remain non-official.
+
 ---
 
 ## 🏗 Repository Structure
