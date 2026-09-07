@@ -72,6 +72,11 @@ from app.schemas.opportunity import (
     OpportunityLifecycle,
     OpportunityParseRequest,
     OpportunityParseResponse,
+    OpportunityDraft,
+    OpportunityMatch,
+    OpportunityMatchRequest,
+    OpportunityMatchResponse,
+    OpportunityNormalizationResult,
     OpportunityType,
 )
 
@@ -99,6 +104,7 @@ from app.schemas.market import (
     MarketDemandRequest,
     MarketDemandResponse,
     SectorDemand,
+    DemandEvidenceStatus,
 )
 
 # Health & Speech
@@ -165,6 +171,11 @@ __all__ = [
     "OpportunityLifecycle",
     "OpportunityParseRequest",
     "OpportunityParseResponse",
+    "OpportunityDraft",
+    "OpportunityMatch",
+    "OpportunityMatchRequest",
+    "OpportunityMatchResponse",
+    "OpportunityNormalizationResult",
     "OpportunityType",
     # Recommendations
     "PathwayType",
@@ -183,6 +194,7 @@ __all__ = [
     "MarketDemandRequest",
     "MarketDemandResponse",
     "SectorDemand",
+    "DemandEvidenceStatus",
     # Health & Speech
     "HealthResponse",
     "SpeechTranscribeRequest",

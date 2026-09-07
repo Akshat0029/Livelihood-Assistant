@@ -27,6 +27,7 @@ graph TD
     Eligibility -->|validates| Opportunity
     NSQFCourse -->|generates| Recommendation
     Opportunity -->|included in| Recommendation
+    Opportunity -->|observed local counts| MarketEvidence["Market Observation Evidence<br/>(Repository-scoped, no forecast)"]
     Recommendation -->|identifies| SkillGap
     SkillGap -->|converted to| Roadmap
 
@@ -62,6 +63,8 @@ graph TD
     RecRoute --> MatchService["SkillMatchingService"]
     MarketRoute --> MarketService["MarketDemandService"]
     RoadmapRoute --> RoadmapService["RoadmapService"]
+    OppRoute --> OppIntelligence["Opportunity Intelligence<br/>(Normalization & Profile Matching)"]
+    MarketRoute --> MarketEvidenceService["MarketDemandService<br/>(Active-record observation counts)"]
 
     RecService --> Rules["NSQF & PM-AJAY Rules (app.rules)"]
     RecService --> DataLoaders["Data Loaders & Repositories (app.data)"]

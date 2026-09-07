@@ -82,29 +82,29 @@ def test_speech_transcribe_endpoint(client: TestClient):
 
 
 def test_opportunities_parse_endpoint(client: TestClient):
-    """Verify POST /v1/opportunities/parse handles valid payload and returns 501 placeholder."""
+    """Verify POST /v1/opportunities/parse does not infer an opportunity from raw text."""
     payload = {
         "raw_content": "PM-AJAY Special Drive: Free NSQF Level 4 training in Lucknow.",
         "scheme_context": "PM-AJAY",
     }
     response = client.post("/v1/opportunities/parse", json=payload)
-    assert response.status_code == 501
+    assert response.status_code == 200
     data = response.json()
-    assert data["success"] is False
-    assert "OpportunityParsingService.parse_opportunities" in data["error"]["message"]
+    assert data["status"] == "structured_record_required"
+    assert data["parsed_opportunities"] == []
 
 
 def test_market_demand_endpoint(client: TestClient):
-    """Verify POST /v1/market/demand handles valid payload and returns 501 placeholder."""
+    """Verify POST /v1/market/demand returns repository-scoped observation evidence."""
     payload = {
-        "state": "Uttar Pradesh",
-        "district": "Lucknow",
+        "state": "Demo State",
+        "district": "Demo District",
     }
     response = client.post("/v1/market/demand", json=payload)
-    assert response.status_code == 501
+    assert response.status_code == 200
     data = response.json()
-    assert data["success"] is False
-    assert "MarketDemandService.analyze_demand" in data["error"]["message"]
+    assert data["status"] == "completed"
+    assert data["top_sectors"][0]["active_opportunity_count"] == 1
 
 
 def test_roadmap_endpoint(client: TestClient):

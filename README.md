@@ -69,6 +69,10 @@ Only seed-backed evidence is used. Missing profile data produces `UNKNOWN` eligi
 
 `POST /v1/roadmap` accepts a canonical target occupation or selected Phase 5 recommendation. It compares canonical beneficiary skills to the target requirements, classifies acquired, missing, and unknown gaps, and creates ordered training or opportunity-application steps only where linked repository records support them. Missing course mappings, unavailable opportunities, and unknown skills are recorded as explicit limitations or blocked verification steps; no courses, certifications, vacancies, benefits, or eligibility claims are invented.
 
+### Phase 10: Opportunity intelligence and local observations
+
+`POST /v1/opportunities/parse` normalizes only a trusted structured opportunity record. It preserves raw occupation/skill values, source evidence, lifecycle, verification state, and synthetic markers; raw announcement text alone is retained but not inferred into a vacancy. `POST /v1/opportunities/match` filters active records against canonical profile skills, location/mobility, employment preference, and an optional occupation ID. `POST /v1/market/demand` reports location-scoped counts of active repository records as observation evidence—not a demand forecast, trend, salary estimate, or statistical claim. Synthetic/demo records are clearly identified in its scope limitations.
+
 ---
 
 ## 🏗 Repository Structure

@@ -84,6 +84,17 @@ class OccupationRepository(InMemoryRepository[Occupation]):
         """Return occupations filtered by employment type."""
         return self.find_by_field("employment_type", employment_type)
 
+    def find_by_normalized_term(self, term: str) -> List[Occupation]:
+        """Find canonical occupation names or aliases after deterministic text folding."""
+        key = SkillRepository._normalization_key(term)
+        if not key:
+            return []
+        return [
+            occupation for occupation in self.list_all()
+            if SkillRepository._normalization_key(occupation.name) == key
+            or any(SkillRepository._normalization_key(alias) == key for alias in occupation.aliases)
+        ]
+
     def find_requiring_skill(self, skill_id: str) -> List[Occupation]:
         """Return all occupations that list skill_id in required_skills."""
         return [

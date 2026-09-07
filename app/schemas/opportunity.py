@@ -3,8 +3,12 @@
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from app.schemas.common import GeographicLocation, SourceEvidence, VerificationStatus
+from app.schemas.eligibility import EligibilityResult
+from app.schemas.ontology import DataClassification
+from app.schemas.profile import BeneficiaryProfile
+from app.schemas.skill import SkillNormalizationResult
 
 
 class OpportunityType(str, Enum):
@@ -68,6 +72,38 @@ class Opportunity(BaseModel):
     evidence: List[SourceEvidence] = Field(
         default_factory=list, description="Supporting documents, gazette notifications, or job ads"
     )
+    is_synthetic: bool = Field(default=False, description="Explicit synthetic/demo marker")
+    data_classification: Optional[DataClassification] = Field(default=None)
+
+    @field_validator("collected_at", "last_verified_at")
+    @classmethod
+    def validate_tz(cls, dt: Optional[datetime]) -> Optional[datetime]:
+        if dt is not None and (dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None):
+            raise ValueError("Opportunity timestamps must be timezone-aware (e.g. UTC).")
+        return dt
+
+
+class OpportunityDraft(BaseModel):
+    """Structured external record awaiting deterministic ontology normalization."""
+
+    opportunity_id: str
+    title: str
+    opportunity_type: OpportunityType
+    sector: str
+    location: GeographicLocation
+    collected_at: datetime
+    required_skills_raw: List[str] = Field(default_factory=list)
+    occupation_raw: Optional[str] = None
+    description: Optional[str] = None
+    employer_or_provider: Optional[str] = None
+    source: Optional[SourceEvidence] = None
+    verification_status: VerificationStatus = VerificationStatus.UNVERIFIED
+    last_verified_at: Optional[datetime] = None
+    lifecycle_status: OpportunityLifecycle = OpportunityLifecycle.REPORTED
+    financial_assistance: Optional[str] = None
+    evidence: List[SourceEvidence] = Field(default_factory=list)
+    is_synthetic: bool = False
+    data_classification: Optional[DataClassification] = None
 
     @field_validator("collected_at", "last_verified_at")
     @classmethod
@@ -78,11 +114,55 @@ class Opportunity(BaseModel):
 
 
 class OpportunityParseRequest(BaseModel):
-    raw_content: str = Field(..., description="Unstructured announcement, circular, or scheme text")
+    raw_content: Optional[str] = Field(default=None, description="Raw source text preserved for audit; not interpreted without a structured record")
+    record: Optional[OpportunityDraft] = Field(default=None, description="Structured record supplied by a trusted ingestion adapter")
     scheme_context: Optional[str] = Field(default="PM-AJAY", description="Specific scheme context")
+
+    @model_validator(mode="after")
+    def require_input(self) -> "OpportunityParseRequest":
+        if not self.raw_content and self.record is None:
+            raise ValueError("raw_content or record is required")
+        return self
+
+
+class OpportunityNormalizationResult(BaseModel):
+    opportunity: Opportunity
+    raw_occupation: Optional[str] = None
+    canonical_occupation_id: Optional[str] = None
+    canonical_occupation_name: Optional[str] = None
+    raw_required_skills: List[str] = Field(default_factory=list)
+    skill_normalizations: List[SkillNormalizationResult] = Field(default_factory=list)
+    limitations: List[str] = Field(default_factory=list)
 
 
 class OpportunityParseResponse(BaseModel):
     parsed_opportunities: List[Opportunity] = Field(default_factory=list)
+    normalization_results: List[OpportunityNormalizationResult] = Field(default_factory=list)
     total_parsed: int = 0
-    status: str = Field(default="pending_ai_implementation")
+    limitations: List[str] = Field(default_factory=list)
+    status: str = Field(default="completed")
+
+
+class OpportunityMatchRequest(BaseModel):
+    profile: BeneficiaryProfile
+    occupation_id: Optional[str] = None
+    pathway_type: Optional[str] = Field(default=None, description="Optional existing pathway type filter")
+    eligibility_result: Optional[EligibilityResult] = None
+    include_reported: bool = False
+
+
+class OpportunityMatch(BaseModel):
+    opportunity: Opportunity
+    canonical_occupation_id: Optional[str] = None
+    matched_skill_ids: List[str] = Field(default_factory=list)
+    missing_skill_ids: List[str] = Field(default_factory=list)
+    location_match: Optional[bool] = None
+    limitations: List[str] = Field(default_factory=list)
+    evidence: List[SourceEvidence] = Field(default_factory=list)
+
+
+class OpportunityMatchResponse(BaseModel):
+    matches: List[OpportunityMatch] = Field(default_factory=list)
+    total_matches: int = 0
+    limitations: List[str] = Field(default_factory=list)
+    status: str = "completed"
