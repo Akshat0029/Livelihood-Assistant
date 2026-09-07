@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     DATA_DIR: str = "./data"
     SEED_DATA_DIR: str = "./data/seed"
 
+    # Skill normalization.  Fuzzy candidates below this threshold are UNKNOWN.
+    SKILL_NORMALIZATION_MIN_CONFIDENCE: float = Field(default=0.90, ge=0.0, le=1.0)
+    SKILL_NORMALIZATION_PHRASE_CONFIDENCE: float = Field(default=0.95, ge=0.0, le=1.0)
+
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def parse_allowed_origins(cls, value: Union[str, List[str]]) -> List[str]:

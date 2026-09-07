@@ -60,6 +60,44 @@ class RawSkill(BaseModel):
     )
 
 
+class SkillNormalizationStatus(str, Enum):
+    """Whether a raw skill was safely resolved to the canonical ontology."""
+
+    MATCHED = "matched"
+    UNKNOWN = "unknown"
+
+
+class SkillNormalizationMethod(str, Enum):
+    """Evidence-bearing method used to resolve a raw skill."""
+
+    EXACT_NAME = "exact_name"
+    EXACT_ALIAS = "exact_alias"
+    PHRASE_NAME = "phrase_name"
+    PHRASE_ALIAS = "phrase_alias"
+    FUZZY_NAME = "fuzzy_name"
+    FUZZY_ALIAS = "fuzzy_alias"
+    UNKNOWN = "unknown"
+
+
+class SkillNormalizationResult(BaseModel):
+    """Auditable outcome of mapping a RawSkill to a canonical Skill.
+
+    Canonical fields are deliberately absent for UNKNOWN results.  Consumers
+    must not treat an unresolved phrase as a canonical capability.
+    """
+
+    raw_skill: RawSkill = Field(..., description="Original input preserved verbatim")
+    status: SkillNormalizationStatus = SkillNormalizationStatus.UNKNOWN
+    canonical_skill_id: Optional[str] = Field(default=None)
+    canonical_skill_name: Optional[str] = Field(default=None)
+    matched_input: Optional[str] = Field(
+        default=None,
+        description="Canonical name or alias that supported the match",
+    )
+    normalization_method: SkillNormalizationMethod = SkillNormalizationMethod.UNKNOWN
+    confidence: float = Field(..., ge=0.0, le=1.0)
+
+
 class Skill(BaseModel):
     """Canonical normalized skill entity mapped from raw/extracted observations."""
 

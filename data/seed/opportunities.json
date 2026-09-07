@@ -2,6 +2,8 @@
   {
     "_comment": "SYNTHETIC DEMO DATA — NOT OFFICIAL — NOT FOR PRODUCTION USE",
     "opportunity_id": "OPP-SYN-001",
+    "is_synthetic": true,
+    "data_classification": "SYNTHETIC",
     "title": "Garment Stitching Trainee [SYNTHETIC DEMO]",
     "opportunity_type": "apprenticeship",
     "sector": "Textile and Apparel",
@@ -28,6 +30,8 @@
   {
     "_comment": "SYNTHETIC DEMO DATA — NOT OFFICIAL — NOT FOR PRODUCTION USE",
     "opportunity_id": "OPP-SYN-002",
+    "is_synthetic": true,
+    "data_classification": "SYNTHETIC",
     "title": "Electrical Helper Vacancy [SYNTHETIC DEMO]",
     "opportunity_type": "wage_employment",
     "sector": "Construction and Real Estate",

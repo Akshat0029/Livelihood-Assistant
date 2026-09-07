@@ -6,6 +6,7 @@ from app.services.matching.matcher import SkillMatchingService
 from app.services.recommendation.recommender import RecommendationService
 from app.services.market.demand import MarketDemandService
 from app.services.roadmap.generator import RoadmapService
+from app.services.normalization.skill_normalizer import SkillNormalizationService
 
 __all__ = [
     "ProfileExtractionService",
@@ -14,4 +15,5 @@ __all__ = [
     "RecommendationService",
     "MarketDemandService",
     "RoadmapService",
+    "SkillNormalizationService",
 ]

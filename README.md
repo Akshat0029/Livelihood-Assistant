@@ -41,6 +41,12 @@ Roadmap (Ordered milestone steps, prerequisites & durations)
 
 Every recommendation and factual assertion is traceable via a unified, timezone-aware `SourceEvidence` model.
 
+### Phase 4: Skill normalization
+
+`SkillNormalizationService` maps a `RawSkill` to the canonical `Skill` records loaded from `data/seed/skills.json`. It preserves the original input and returns the canonical ID/name, supporting name or alias, normalization method, and confidence. It applies exact matching, token-boundary phrase matching, and a conservative standard-library spelling fallback in that order. Existing aliases are the sole source for transliterated or multilingual variants; it does not invent translations or skills.
+
+The normalizer is deterministic, rejects collisions, and returns `UNKNOWN` with no canonical fields for unresolved or below-threshold inputs. Configure `SKILL_NORMALIZATION_MIN_CONFIDENCE` (default `0.90`) and `SKILL_NORMALIZATION_PHRASE_CONFIDENCE` (default `0.95`) in the environment. The service has no LLM, ASR, embedding, database, or external-backend dependency; a future embedding matcher can be added as a separate fallback stage.
+
 ---
 
 ## 🏗 Repository Structure

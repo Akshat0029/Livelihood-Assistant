@@ -9,6 +9,8 @@ Each domain repository:
 The AI engine should import these typed repositories, not InMemoryRepository directly.
 """
 
+import re
+import unicodedata
 from typing import List, Optional
 
 from app.data.repositories.memory_repository import InMemoryRepository
@@ -43,6 +45,24 @@ class SkillRepository(InMemoryRepository[Skill]):
         return [
             s for s in self.list_all()
             if any(a.lower() == alias_lower for a in s.aliases)
+        ]
+
+    @staticmethod
+    def _normalization_key(value: str) -> str:
+        """Create a deterministic comparison key without changing stored data."""
+        value = unicodedata.normalize("NFKC", value).casefold()
+        return " ".join(re.sub(r"[^\w]+", " ", value, flags=re.UNICODE).split())
+
+    def find_by_normalized_term(self, term: str) -> List[Skill]:
+        """Find canonical names or aliases after case/spacing/punctuation folding."""
+        key = self._normalization_key(term)
+        if not key:
+            return []
+        return [
+            skill
+            for skill in self.list_all()
+            if self._normalization_key(skill.name) == key
+            or any(self._normalization_key(alias) == key for alias in skill.aliases)
         ]
 
 
