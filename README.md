@@ -65,6 +65,10 @@ Only seed-backed evidence is used. Missing profile data produces `UNKNOWN` eligi
 
 `POST /v1/interview/turn` is a state-light interview endpoint: callers send the prior `BeneficiaryProfile`, optional session ID, user turn, and explicitly unknown slots each time. It reuses Phase 6 extraction and Phase 4 normalization, merges only stated values, reports outstanding slots, and selects one deterministic, localized next question. It does not persist sessions, fabricate profile values, or generate recommendations.
 
+### Phase 9: Skill gaps and career roadmap
+
+`POST /v1/roadmap` accepts a canonical target occupation or selected Phase 5 recommendation. It compares canonical beneficiary skills to the target requirements, classifies acquired, missing, and unknown gaps, and creates ordered training or opportunity-application steps only where linked repository records support them. Missing course mappings, unavailable opportunities, and unknown skills are recorded as explicit limitations or blocked verification steps; no courses, certifications, vacancies, benefits, or eligibility claims are invented.
+
 ---
 
 ## 🏗 Repository Structure

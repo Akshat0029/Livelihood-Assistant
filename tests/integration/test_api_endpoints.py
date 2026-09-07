@@ -108,7 +108,7 @@ def test_market_demand_endpoint(client: TestClient):
 
 
 def test_roadmap_endpoint(client: TestClient):
-    """Verify POST /v1/roadmap handles valid payload and returns 501 placeholder."""
+    """Verify POST /v1/roadmap safely reports a canonical target absent from the seed repository."""
     payload = {
         "profile": {
             "beneficiary_id": "cand_001",
@@ -118,10 +118,10 @@ def test_roadmap_endpoint(client: TestClient):
         "timeframe_months": 6,
     }
     response = client.post("/v1/roadmap", json=payload)
-    assert response.status_code == 501
+    assert response.status_code == 200
     data = response.json()
-    assert data["success"] is False
-    assert "RoadmapService.generate_roadmap" in data["error"]["message"]
+    assert data["status"] == "target_not_found"
+    assert data["roadmap"] is None
 
 
 def test_profile_validate_validation_error(client: TestClient):
