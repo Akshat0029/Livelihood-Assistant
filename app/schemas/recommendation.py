@@ -23,17 +23,23 @@ class PathwayType(str, Enum):
 class ScoreBreakdown(BaseModel):
     """Detailed multidimensional scoring for a recommendation."""
 
+    interest_similarity_score: float = Field(default=0.0, ge=0.0, le=1.0)
     skill_match_score: float = Field(
         ..., ge=0.0, le=1.0, description="Semantic skill overlap index between 0.0 and 1.0"
     )
+    local_opportunity_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    labour_demand_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    employment_preference_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    # Retained for Phase 1–4 response compatibility.  Phase 5 populates these
+    # with the corresponding explicit component values.
     local_demand_score: float = Field(
-        ..., ge=0.0, le=1.0, description="District/regional labor demand signal index"
+        default=0.0, ge=0.0, le=1.0, description="Legacy alias of labour_demand_score"
     )
     eligibility_score: Optional[float] = Field(
         default=None, ge=0.0, le=1.0, description="Scheme eligibility confidence"
     )
     preference_alignment_score: Optional[float] = Field(
-        default=None, ge=0.0, le=1.0, description="Alignment with beneficiary goals"
+        default=None, ge=0.0, le=1.0, description="Legacy preference alignment field"
     )
 
 
@@ -41,6 +47,7 @@ class Recommendation(BaseModel):
     """Canonical recommendation entity representing a validated skilling/career pathway."""
 
     recommendation_id: str = Field(..., description="Unique recommendation identifier")
+    rank: Optional[int] = Field(default=None, ge=1, description="One-based deterministic rank")
     pathway_type: PathwayType = Field(..., description="Classification of recommended pathway")
     occupation_reference: Optional[str] = Field(
         default=None, description="Target canonical occupation ID or title"
@@ -107,6 +114,10 @@ class RecommendationRequest(BaseModel):
     )
     location_filter: Optional[str] = Field(
         default=None, description="Optional district/state restriction"
+    )
+    eligibility_result: Optional[EligibilityResult] = Field(
+        default=None,
+        description="An explicit eligibility assessment. UNKNOWN is not treated as a pass or failure.",
     )
 
 

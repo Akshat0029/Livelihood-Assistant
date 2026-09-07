@@ -47,6 +47,12 @@ Every recommendation and factual assertion is traceable via a unified, timezone-
 
 The normalizer is deterministic, rejects collisions, and returns `UNKNOWN` with no canonical fields for unresolved or below-threshold inputs. Configure `SKILL_NORMALIZATION_MIN_CONFIDENCE` (default `0.90`) and `SKILL_NORMALIZATION_PHRASE_CONFIDENCE` (default `0.95`) in the environment. The service has no LLM, ASR, embedding, database, or external-backend dependency; a future embedding matcher can be added as a separate fallback stage.
 
+### Phase 5: Hybrid recommendation engine
+
+`RecommendationService` joins canonical occupation, course, opportunity, and skill repositories into at most three deterministic pathways. It applies known education, employment-preference, explicit eligibility, and location/mobility constraints before scoring interest (25%), skills (20%), eligibility (20%), local opportunity (15%), labour demand (10%), and work preference (10%). Weights are environment-configurable and must total 1.0.
+
+Only seed-backed evidence is used. Missing profile data produces `UNKNOWN` eligibility or a zero component score instead of an assumed pass/fail or demand signal; no market-demand data currently exists in the seed set. The component methods are isolated for a future semantic matcher, but Phase 5 uses no embeddings, LLMs, databases, or external services.
+
 ---
 
 ## 🏗 Repository Structure

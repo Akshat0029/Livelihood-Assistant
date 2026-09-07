@@ -40,7 +40,7 @@ def test_profile_validate_endpoint(client: TestClient):
 
 
 def test_recommendations_endpoint(client: TestClient):
-    """Verify POST /v1/recommendations handles valid payload and returns 501 placeholder."""
+    """Verify POST /v1/recommendations returns deterministic Phase 5 results."""
     payload = {
         "profile": {
             "candidate_id": "cand_001",
@@ -50,10 +50,10 @@ def test_recommendations_endpoint(client: TestClient):
         "max_recommendations": 3,
     }
     response = client.post("/v1/recommendations", json=payload)
-    assert response.status_code == 501
+    assert response.status_code == 200
     data = response.json()
-    assert data["success"] is False
-    assert "RecommendationService.get_recommendations" in data["error"]["message"]
+    assert data["status"] == "completed"
+    assert data["recommendations"] == []
 
 
 def test_speech_transcribe_endpoint(client: TestClient):

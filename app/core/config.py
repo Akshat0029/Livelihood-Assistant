@@ -40,6 +40,15 @@ class Settings(BaseSettings):
     SKILL_NORMALIZATION_MIN_CONFIDENCE: float = Field(default=0.90, ge=0.0, le=1.0)
     SKILL_NORMALIZATION_PHRASE_CONFIDENCE: float = Field(default=0.95, ge=0.0, le=1.0)
 
+    # Phase 5 — deterministic hybrid recommendation component weights.
+    RECOMMENDATION_INTEREST_WEIGHT: float = Field(default=0.25, ge=0.0, le=1.0)
+    RECOMMENDATION_SKILL_WEIGHT: float = Field(default=0.20, ge=0.0, le=1.0)
+    RECOMMENDATION_ELIGIBILITY_WEIGHT: float = Field(default=0.20, ge=0.0, le=1.0)
+    RECOMMENDATION_LOCAL_OPPORTUNITY_WEIGHT: float = Field(default=0.15, ge=0.0, le=1.0)
+    RECOMMENDATION_LABOUR_DEMAND_WEIGHT: float = Field(default=0.10, ge=0.0, le=1.0)
+    RECOMMENDATION_EMPLOYMENT_PREFERENCE_WEIGHT: float = Field(default=0.10, ge=0.0, le=1.0)
+    RECOMMENDATION_MODEL_VERSION: str = "phase-5-deterministic-v1"
+
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def parse_allowed_origins(cls, value: Union[str, List[str]]) -> List[str]:
