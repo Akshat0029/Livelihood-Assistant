@@ -149,6 +149,25 @@ Or directly with Uvicorn:
 uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
+### Runtime configuration and container
+
+Configuration is environment-based; `.env.example` contains safe development defaults and no credentials. `APP_ENV` must be `development`, `test`, or `production`. Production rejects `ALLOWED_ORIGINS=*`; configure the actual browser origins explicitly. Gemini and the locally provisioned Whisper model are optional: the service and deterministic `/v1/livelihood/assess` endpoint start without either, while `/v1/profile/extract` and `/v1/speech/transcribe` return explicit `503` provider-configuration errors until configured. Whisper is never downloaded automatically; mount/provision its model and set `ASR_MODEL_PATH` only when voice transcription is needed.
+
+Build and run the minimal container (no model is included):
+
+```bash
+docker build -t livelihood-assistant .
+docker run --rm -p 8000:8000 -e ALLOWED_ORIGINS=https://demo.example livelihood-assistant
+```
+
+The runtime logs operational lifecycle and error categories only; it does not log credentials, raw audio, source text, or beneficiary profiles.
+
+### SIH demo readiness
+
+This standalone AIML service accepts a structured beneficiary profile and deterministically runs skill normalization, canonical pathway recommendation, active-opportunity matching, local repository observation counts, skill-gap analysis, roadmap generation, and consolidated livelihood assessment. The primary demo endpoint is `POST /v1/livelihood/assess`; it works without Gemini or Whisper. Optional text/voice intake first uses the existing profile-extraction/interview and ASR boundaries, then enters the same assessment pipeline.
+
+Start the service as above, run `pytest -q`, and run `python scripts/run_evaluation.py` for the reproducible evaluation report. Final demo payloads are recorded in `data/demo/sih_final_demo_scenarios.json`. Every record is synthetic/demo-only: no output represents an official scheme decision, real vacancy, salary, employer, or labour-market forecast. Gemini and local Whisper remain optional and must be provisioned separately; no model is bundled or downloaded automatically.
+
 Interactive API Documentation:
 - **Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 - **ReDoc**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
@@ -178,6 +197,7 @@ pytest -v
 | `POST` | `/v1/opportunities/parse` | Parse public circulars into canonical `Opportunity` records |
 | `POST` | `/v1/market/demand` | Query district/regional market skill demand |
 | `POST` | `/v1/roadmap` | Generate step-by-step career & skilling roadmaps |
+| `POST` | `/v1/channel/interact` | Channel-agnostic text/audio interaction boundary |
 
 ---
 

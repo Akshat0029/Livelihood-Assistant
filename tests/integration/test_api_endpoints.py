@@ -136,6 +136,20 @@ def test_opportunities_parse_endpoint(client: TestClient):
     assert data["parsed_opportunities"] == []
 
 
+def test_opportunities_match_endpoint_excludes_reported_records_by_default(client: TestClient):
+    response = client.post("/v1/opportunities/match", json={
+        "profile": {
+            "employment_preference": "apprenticeship",
+            "location": {"state": "Demo State", "district": "Demo District"},
+            "traditional_skills": ["silai"],
+        }
+    })
+    assert response.status_code == 200
+    ids = [item["opportunity"]["opportunity_id"] for item in response.json()["matches"]]
+    assert ids == ["OPP-SYN-001"]
+    assert "OPP-SYN-002" not in ids
+
+
 def test_market_demand_endpoint(client: TestClient):
     """Verify POST /v1/market/demand returns repository-scoped observation evidence."""
     payload = {

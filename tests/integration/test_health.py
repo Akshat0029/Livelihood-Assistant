@@ -23,3 +23,9 @@ def test_root_endpoint(client: TestClient):
     data = response.json()
     assert data["status"] == "online"
     assert data["health"] == "/v1/health"
+
+
+def test_openapi_endpoint_is_available_for_runtime_integration(client: TestClient):
+    response = client.get("/openapi.json")
+    assert response.status_code == 200
+    assert "/v1/health" in response.json()["paths"]

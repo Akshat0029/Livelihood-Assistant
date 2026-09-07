@@ -45,7 +45,7 @@ class WhisperASRProvider(BaseASRProvider):
         self.model_name = config.ASR_MODEL_VERSION
 
     async def transcribe(self, audio_bytes: bytes, audio_format: str, language_hint: Optional[str]) -> ASRResult:
-        if not self._model_path:
+        if not self._model_path or not Path(self._model_path).exists():
             raise ProviderConfigurationException("Whisper ASR")
         return await asyncio.to_thread(self._transcribe_sync, audio_bytes, audio_format, language_hint)
 

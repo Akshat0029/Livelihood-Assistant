@@ -1,6 +1,7 @@
 """Health check route."""
 
 from fastapi import APIRouter, status
+from pathlib import Path
 from app.core.config import settings
 from app.schemas.health import HealthResponse
 
@@ -23,8 +24,8 @@ async def check_health() -> HealthResponse:
         environment=settings.APP_ENV,
         services={
             "api": "online",
-            "ai_extractor": "registered",
-            "speech_transcriber": "registered",
+            "ai_extractor": "configured" if settings.GEMINI_API_KEY else "not_configured",
+            "speech_transcriber": "configured" if settings.ASR_MODEL_PATH and Path(settings.ASR_MODEL_PATH).exists() else "not_configured",
             "skill_matcher": "registered",
             "recommendation_engine": "registered",
             "market_demand": "registered",

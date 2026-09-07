@@ -129,7 +129,10 @@ def test_location_mobility_preference_and_lifecycle_filters_are_evidence_bound()
 
     expired = remote.model_copy(update={"opportunity_id": "OPP-EXPIRED", "lifecycle_status": OpportunityLifecycle.EXPIRED})
     opportunities.add(expired)
+    filled = remote.model_copy(update={"opportunity_id": "OPP-FILLED", "lifecycle_status": OpportunityLifecycle.FILLED})
+    opportunities.add(filled)
     assert "OPP-EXPIRED" not in [match.opportunity.opportunity_id for match in constrained.matches]
+    assert "OPP-FILLED" not in [match.opportunity.opportunity_id for match in constrained.matches]
 
 
 def test_market_counts_are_explicit_observations_and_missing_evidence_is_unknown():

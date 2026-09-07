@@ -4,7 +4,7 @@ Using Pydantic BaseSettings for strongly-typed configuration management.
 """
 
 from typing import List, Union
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "Livelihood-Assistant-AI"
     APP_VERSION: str = "0.1.0"
     APP_ENV: str = "development"
-    DEBUG: bool = True
+    DEBUG: bool = False
     
     # Server Binding
     HOST: str = "127.0.0.1"
@@ -24,7 +24,10 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/v1"
 
     # Security & CORS
-    ALLOWED_ORIGINS: Union[str, List[str]] = ["*"]
+    ALLOWED_ORIGINS: Union[str, List[str]] = Field(
+        default_factory=lambda: ["http://localhost:3000", "http://localhost:5173"],
+        description="Explicit browser origins; wildcard is forbidden in production.",
+    )
 
     # AI & Speech Services (Credentials loaded strictly from env)
     GEMINI_API_KEY: str = Field(default="", description="Google Gemini API key")
@@ -64,6 +67,28 @@ class Settings(BaseSettings):
                 return ["*"]
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
+
+    @field_validator("APP_ENV")
+    @classmethod
+    def validate_environment(cls, value: str) -> str:
+        environment = value.strip().casefold()
+        if environment not in {"development", "test", "production"}:
+            raise ValueError("APP_ENV must be one of: development, test, production")
+        return environment
+
+    @field_validator("LOG_LEVEL")
+    @classmethod
+    def validate_log_level(cls, value: str) -> str:
+        level = value.strip().upper()
+        if level not in {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}:
+            raise ValueError("LOG_LEVEL must be a standard Python logging level")
+        return level
+
+    @model_validator(mode="after")
+    def validate_production_settings(self) -> "Settings":
+        if self.APP_ENV == "production" and "*" in self.ALLOWED_ORIGINS:
+            raise ValueError("ALLOWED_ORIGINS must not contain '*' in production")
+        return self
 
     model_config = SettingsConfigDict(
         env_file=".env",
