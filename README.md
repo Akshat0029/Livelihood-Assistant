@@ -77,6 +77,10 @@ Only seed-backed evidence is used. Missing profile data produces `UNKNOWN` eligi
 
 `POST /v1/livelihood/assess` coordinates the existing deterministic skill normalization, recommendation, opportunity intelligence, market-observation, and roadmap services over one canonical repository snapshot. It accepts an already structured `BeneficiaryProfile`, so Gemini and ASR are not required. The response returns ranked pathways, matching opportunity evidence, the location-scoped observation summary, roadmaps, deduplicated source evidence, service/model metadata, and explicit limitations. It does not execute user text, expose configuration secrets, or invent data. Recommendations remain the existing deterministic/hybrid Phase 5 output; opportunity counts are repository observations rather than a labour-market forecast; synthetic/demo inputs remain non-official.
 
+### Phase 12: Reproducible evaluation
+
+Synthetic, manually labeled evaluation records live in `data/evaluation/`, separate from the runtime seed repositories. Run `python scripts/run_evaluation.py` to execute the current deterministic services and emit a machine-readable JSON report plus a concise summary. The runner measures skill-normalization accuracy and UNKNOWN correctness, explicitly labeled recommendation Top-1/Top-3 behavior and repeatability, education-eligibility accuracy, opportunity-matching accuracy, structural roadmap validity, and repeated end-to-end output consistency. These are measured results—not quality targets or official-government accuracy claims. There are 12 recommendation scenarios rather than 30–50 because the seed ontology contains only two demo occupations and only defensibly labelable variants are included. Dataset labels and results are limited by that small synthetic ontology; source-evidence propagation is limited to no-fabrication/empty-evidence checks because the seed roadmaps have no evidence IDs. External labour-market forecasts, LLM extraction, and ASR are outside this evaluation.
+
 ---
 
 ## 🏗 Repository Structure
