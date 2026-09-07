@@ -128,14 +128,25 @@ class ProfileExtractRequest(BaseModel):
     )
 
 
+class ProfileExtractionMetadata(BaseModel):
+    """Traceability metadata for a validated extraction response."""
+
+    provider: str
+    model: str
+    model_version: str
+    input_language: str
+
+
 class ProfileExtractResponse(BaseModel):
     extracted_profile: BeneficiaryProfile
+    original_text: str = Field(..., description="Original user input preserved verbatim")
     raw_skills_detected: List[RawSkill] = Field(
         default_factory=list, description="Raw dialect and conversational skill phrases detected"
     )
     confidence_score: float = Field(default=0.0, ge=0.0, le=1.0)
     missing_critical_fields: List[str] = Field(default_factory=list)
-    status: str = Field(default="pending_ai_implementation")
+    extraction_metadata: Optional[ProfileExtractionMetadata] = None
+    status: str = Field(default="completed")
 
 
 class ProfileValidateRequest(BaseModel):

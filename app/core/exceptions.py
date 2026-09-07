@@ -49,6 +49,28 @@ class ValidationException(AppException):
         )
 
 
+class ProviderConfigurationException(AppException):
+    """Raised when an externally configured provider cannot be used safely."""
+
+    def __init__(self, provider_name: str):
+        super().__init__(
+            message=f"{provider_name} is not configured.",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            details={"provider": provider_name},
+        )
+
+
+class ProviderResponseException(AppException):
+    """Raised when a provider response is malformed or unavailable."""
+
+    def __init__(self, provider_name: str):
+        super().__init__(
+            message=f"{provider_name} returned an unusable response.",
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            details={"provider": provider_name},
+        )
+
+
 async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
     """Global handler for AppException subclasses."""
     return JSONResponse(

@@ -1,6 +1,10 @@
 """Profile extraction and validation routes."""
 
+from pathlib import Path
 from fastapi import APIRouter, Depends, status
+from app.core.config import settings
+from app.data.loaders.domain_loaders import SkillLoader
+from app.data.repositories.domain_repositories import SkillRepository
 from app.schemas.profile import (
     ProfileExtractRequest,
     ProfileExtractResponse,
@@ -8,12 +12,25 @@ from app.schemas.profile import (
     ProfileValidateResponse,
 )
 from app.services.ai.extractor import BaseProfileExtractionService, ProfileExtractionService
+from app.services.ai.gemini import GeminiStructuredExtractionProvider
+from app.services.normalization.skill_normalizer import SkillNormalizationService
 
 router = APIRouter(prefix="/profile", tags=["Candidate Profile"])
 
 
 def get_profile_service() -> BaseProfileExtractionService:
-    return ProfileExtractionService()
+    """Compose Gemini and the canonical skill repository at the route boundary."""
+    repository = SkillRepository()
+    loaded = SkillLoader(Path(settings.SEED_DATA_DIR) / "skills.json").load()
+    if loaded.errors:
+        raise RuntimeError(f"Cannot initialize skill seed data: {loaded.errors[0].reason}")
+    for skill in loaded.records:
+        repository.add(skill)
+    return ProfileExtractionService(
+        GeminiStructuredExtractionProvider(settings),
+        SkillNormalizationService(repository, settings),
+        settings,
+    )
 
 
 @router.post(

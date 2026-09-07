@@ -28,6 +28,9 @@ class Settings(BaseSettings):
 
     # AI & Speech Services (Credentials loaded strictly from env)
     GEMINI_API_KEY: str = Field(default="", description="Google Gemini API key")
+    GEMINI_MODEL: str = "gemini-2.0-flash"
+    GEMINI_TIMEOUT_SECONDS: float = Field(default=20.0, gt=0.0, le=120.0)
+    PROFILE_EXTRACTION_MODEL_VERSION: str = "phase-6-gemini-json-v1"
     BHASHINI_API_KEY: str = Field(default="", description="Bhashini ASR/TTS API key")
     BHASHINI_USER_ID: str = Field(default="", description="Bhashini User identifier")
     BHASHINI_PIPELINE_ID: str = Field(default="", description="Bhashini Pipeline identifier")

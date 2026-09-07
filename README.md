@@ -53,6 +53,10 @@ The normalizer is deterministic, rejects collisions, and returns `UNKNOWN` with 
 
 Only seed-backed evidence is used. Missing profile data produces `UNKNOWN` eligibility or a zero component score instead of an assumed pass/fail or demand signal; no market-demand data currently exists in the seed set. The component methods are isolated for a future semantic matcher, but Phase 5 uses no embeddings, LLMs, databases, or external services.
 
+### Phase 6: LLM-assisted profile extraction
+
+`POST /v1/profile/extract` uses the environment-only `GEMINI_API_KEY` with Gemini JSON mode solely to extract stated beneficiary facts from multilingual text. Provider output is an untrusted payload: it is strictly Pydantic-validated, rejected on malformed or invalid values, and its raw skill phrases are normalized through Phase 4 before a canonical `BeneficiaryProfile` is returned. The response preserves the original text, raw skills, confidence, and model metadata. Gemini never produces recommendations or canonical opportunities, courses, eligibility, schemes, salaries, or market data.
+
 ---
 
 ## 🏗 Repository Structure

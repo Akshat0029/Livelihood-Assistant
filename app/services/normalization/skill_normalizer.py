@@ -84,6 +84,10 @@ class SkillNormalizationService(BaseSkillNormalizationService):
             confidence=confidence,
         )
 
+    def get_canonical_skill(self, skill_id: str) -> Skill | None:
+        """Expose a read-only canonical lookup for downstream service composition."""
+        return self._repository.get_by_id(skill_id)
+
     def _select_unique(
         self, candidates: list[_Candidate]
     ) -> _Candidate | None:

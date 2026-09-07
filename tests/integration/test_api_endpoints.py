@@ -4,17 +4,17 @@ from fastapi.testclient import TestClient
 
 
 def test_profile_extract_endpoint(client: TestClient):
-    """Verify POST /v1/profile/extract handles valid payload and returns 501 placeholder."""
+    """Verify POST /v1/profile/extract safely reports an unconfigured Gemini provider."""
     payload = {
         "raw_text": "Mera naam Rajesh hai, 10th pass hoon, solar work sikhna chahta hoon.",
         "language": "hi",
         "source": "voice_interview",
     }
     response = client.post("/v1/profile/extract", json=payload)
-    assert response.status_code == 501
+    assert response.status_code == 503
     data = response.json()
     assert data["success"] is False
-    assert "ProfileExtractionService.extract_profile" in data["error"]["message"]
+    assert data["error"]["details"] == {"provider": "Gemini"}
 
 
 def test_profile_extract_validation_error(client: TestClient):
