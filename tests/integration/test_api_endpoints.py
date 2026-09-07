@@ -100,15 +100,10 @@ def test_roadmap_endpoint(client: TestClient):
     """Verify POST /v1/roadmap handles valid payload and returns 501 placeholder."""
     payload = {
         "profile": {
-            "candidate_id": "cand_001",
-            "existing_skills": ["basic electrician"],
+            "beneficiary_id": "cand_001",
+            "traditional_skills": ["basic electrician"],
         },
-        "target_role": {
-            "qp_code": "ELE/Q1401",
-            "job_role": "Solar PV Installer",
-            "nsqf_level": 4,
-            "sector": "Electronics & Green Energy",
-        },
+        "target_occupation_id": "OCC-SOL-001",
         "timeframe_months": 6,
     }
     response = client.post("/v1/roadmap", json=payload)

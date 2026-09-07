@@ -24,7 +24,7 @@ class RoadmapService(BaseRoadmapService):
         raise ServiceNotImplementedException(
             service_name="RoadmapService.generate_roadmap",
             details={
-                "candidate_id": request.profile.candidate_id,
-                "target_role": request.target_role.job_role,
+                "beneficiary_id": request.profile.beneficiary_id,
+                "target_occupation_id": request.target_occupation_id,
             },
         )

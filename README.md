@@ -3,6 +3,7 @@
 [![CI](https://github.com/Akshat0029/Livelihood-Assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Akshat0029/Livelihood-Assistant/actions/workflows/ci.yml)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-blue.svg?logo=python)](https://python.org)
+[![Pydantic v2](https://img.shields.io/badge/Pydantic-v2-e92063.svg?logo=pydantic)](https://docs.pydantic.dev)
 
 **Smart India Hackathon 2026** | **Problem Statement 26097**  
 *AI-Driven Voice Assistant for Livelihood Mapping and NSQF-Aligned Skilling Recommendations for SC Communities under PM-AJAY.*
@@ -10,27 +11,56 @@
 ---
 
 ## 📌 Project Overview
-Livelihood-Assistant is a completely standalone AI backend service providing clean RESTful endpoints to empower beneficiaries from Scheduled Caste (SC) communities under the **Pradhan Mantri Anusuchit Jaati Abhyuday Yojana (PM-AJAY)**. The service extracts candidate profiles from natural voice conversations, validates eligibility against scheme criteria, maps competencies to **National Skills Qualifications Framework (NSQF)** standards, analyzes district-level labor market demand, and outputs personalized career progression roadmaps.
+Livelihood-Assistant is a standalone AI backend service providing clean RESTful endpoints to empower beneficiaries from Scheduled Caste (SC) communities under the **Pradhan Mantri Anusuchit Jaati Abhyuday Yojana (PM-AJAY)**. The service extracts candidate profiles from natural voice conversations, validates eligibility against scheme criteria, maps competencies to **National Skills Qualifications Framework (NSQF)** standards, analyzes district-level labor market demand, and outputs personalized career progression roadmaps.
 
 ---
 
-## 🏛 Architecture & Principles
+## 🏛 Canonical Domain Pipeline
 
-### Standalone Design
-This repository is completely independent:
-- **No dependencies** on any other repository's codebase.
-- **No direct database coupling** to external team databases (e.g., MongoDB).
-- Exposes clean, standardized **REST APIs** over HTTP/JSON with OpenAPI specifications for integration with any web, mobile, or IVR interface.
+The service models the complete livelihood journey through canonical, strongly-typed Pydantic v2 domain schemas:
 
-### Layered Structure
+```
+BeneficiaryProfile
+   ↓
+Skills (RawSkill & Canonical Skill)
+   ↓
+Occupation (NCO/NOS Classifications)
+   ↓
+NSQF Course (Levels 1–10, Qualification Packs)
+   ↓
+Eligibility (Criteria matching with explicit UNKNOWN support)
+   ↓
+Opportunity (Wage & Self-Employment, Lifecycle: Reported → Active → Filled)
+   ↓
+Recommendation (Top pathways with multidimensional score breakdown)
+   ↓
+Skill Gap (Proficiency delta with priority levels)
+   ↓
+Roadmap (Ordered milestone steps, prerequisites & durations)
+```
+
+Every recommendation and factual assertion is traceable via a unified, timezone-aware `SourceEvidence` model.
+
+---
+
+## 🏗 Repository Structure
 - **`app/main.py`**: Application factory, middleware, CORS, and global exception handlers.
 - **`app/core/`**: Configuration management (`BaseSettings`) and custom exception classes.
 - **`app/routes/`**: FastAPI routers grouped under `/v1` prefix.
-- **`app/schemas/`**: Pydantic v2 data contracts for strong typing and validation.
-- **`app/services/`**: Abstract interfaces and modular service implementations (AI extraction, speech, matching, recommendations, market demand, roadmap).
-- **`app/rules/`**: NSQF level descriptors and PM-AJAY program criteria.
-- **`app/data/`**: Abstract data loaders and repositories for NSQF and local market records.
-- **`tests/`**: Unit tests, API integration tests, and evaluation harnesses.
+- **`app/schemas/`**: Canonical Pydantic v2 domain contracts:
+  - `profile.py`: `BeneficiaryProfile`, `EducationEntry`, `WorkHistoryEntry`.
+  - `skill.py`: `RawSkill`, `Skill`, `SkillGap`, categories and proficiencies.
+  - `occupation.py`: `Occupation`, `EmploymentType`.
+  - `course.py`: `NSQFCourse` with strict NSQF level (1–10) bounds.
+  - `eligibility.py`: `EligibilityResult`, `CriterionResult`, `EligibilityStatus`.
+  - `opportunity.py`: `Opportunity`, `OpportunityType`, `OpportunityLifecycle`.
+  - `recommendation.py`: `Recommendation`, `PathwayType`, `ScoreBreakdown`.
+  - `roadmap.py`: `Roadmap`, `RoadmapStep`, `StepType`, `StepStatus`.
+  - `common.py`: `GeographicLocation`, `SourceEvidence`, core enums.
+- **`app/services/`**: Abstract service interfaces (`ABC`) and placeholder implementations.
+- **`app/rules/`**: Static NSQF level descriptors and PM-AJAY program criteria.
+- **`app/data/`**: Ingestion loaders and repository interfaces without database coupling.
+- **`tests/`**: Unit tests, schema validation, integration tests, and evaluation harnesses.
 
 ---
 
@@ -41,7 +71,6 @@ This repository is completely independent:
 - Virtual environment (`venv` recommended)
 
 ### 2. Environment Setup
-Clone the repository and set up a virtual environment:
 ```bash
 python -m venv .venv
 # On Windows:
@@ -55,7 +84,7 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Create `.env` from the template:
+Create `.env` from template:
 ```bash
 cp .env.example .env
 ```
@@ -70,9 +99,10 @@ Or directly with Uvicorn:
 uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Once running, access:
-- **Interactive Swagger Docs**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+Interactive API Documentation:
+- **Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 - **ReDoc**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
+- **OpenAPI JSON**: [http://127.0.0.1:8000/openapi.json](http://127.0.0.1:8000/openapi.json)
 - **Health Check**: [http://127.0.0.1:8000/v1/health](http://127.0.0.1:8000/v1/health)
 
 ---
@@ -91,11 +121,11 @@ pytest -v
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/v1/health` | Service health status and subsystem registration |
-| `POST` | `/v1/profile/extract` | Extract profile attributes from voice interview transcripts |
-| `POST` | `/v1/profile/validate` | Check candidate eligibility against PM-AJAY scheme rules |
-| `POST` | `/v1/recommendations` | Generate NSQF-aligned skilling & course recommendations |
+| `POST` | `/v1/profile/extract` | Extract canonical `BeneficiaryProfile` and raw skills from text |
+| `POST` | `/v1/profile/validate` | Evaluate candidate eligibility against PM-AJAY criteria |
+| `POST` | `/v1/recommendations` | Generate canonical `Recommendation` records with score breakdowns |
 | `POST` | `/v1/speech/transcribe` | Audio speech-to-text transcription interface |
-| `POST` | `/v1/opportunities/parse` | Parse opportunities from notices and circulars |
+| `POST` | `/v1/opportunities/parse` | Parse public circulars into canonical `Opportunity` records |
 | `POST` | `/v1/market/demand` | Query district/regional market skill demand |
 | `POST` | `/v1/roadmap` | Generate step-by-step career & skilling roadmaps |
 

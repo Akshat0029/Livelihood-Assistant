@@ -3,6 +3,43 @@
 ## Project Summary
 **Livelihood-Assistant** is an AI-driven, standalone voice and livelihood mapping assistant designed for Scheduled Caste (SC) communities under the **Pradhan Mantri Anusuchit Jaati Abhyuday Yojana (PM-AJAY)**. The service aligns beneficiary aspirations and existing skills with **NSQF (National Skills Qualifications Framework)** levels and local labor market demands.
 
+## Canonical Domain Model Pipeline
+
+The end-to-end livelihood progression and skilling recommendation pipeline is modeled using canonical Pydantic v2 schemas:
+
+```mermaid
+graph TD
+    Beneficiary["BeneficiaryProfile<br/>(Demographics, Location, Education, Preferences)"]
+    Skills["Skills<br/>(RawSkill & Canonical Skill)"]
+    Occupation["Occupation<br/>(NCO/NOS Aligned Roles)"]
+    NSQFCourse["NSQF Course<br/>(Levels 1-10, QP Codes, Acquired Skills)"]
+    Eligibility["Eligibility<br/>(Eligible / Ineligible / Explicit UNKNOWN)"]
+    Opportunity["Opportunity<br/>(Wage & Self-Employment, Lifecycle: Reported->Active)"]
+    Recommendation["Recommendation<br/>(Pathways, Multidimensional Scores, Top 3-5)"]
+    SkillGap["Skill Gap<br/>(Current vs Target Proficiency, Priority)"]
+    Roadmap["Roadmap<br/>(Ordered Milestone Steps & Duration)"]
+    SourceEvidence["SourceEvidence<br/>(Traceability, Gazettes, Timezone-aware)"]
+
+    Beneficiary -->|has| Skills
+    Skills -->|mapped to| Occupation
+    Occupation -->|aligned with| NSQFCourse
+    Beneficiary -->|evaluated for| Eligibility
+    Eligibility -->|validates| Opportunity
+    NSQFCourse -->|generates| Recommendation
+    Opportunity -->|included in| Recommendation
+    Recommendation -->|identifies| SkillGap
+    SkillGap -->|converted to| Roadmap
+
+    SourceEvidence -.->|grounds| Beneficiary
+    SourceEvidence -.->|grounds| Skills
+    SourceEvidence -.->|grounds| Occupation
+    SourceEvidence -.->|grounds| NSQFCourse
+    SourceEvidence -.->|grounds| Eligibility
+    SourceEvidence -.->|grounds| Opportunity
+    SourceEvidence -.->|grounds| Recommendation
+    SourceEvidence -.->|grounds| Roadmap
+```
+
 ## High-Level System Architecture
 
 ```mermaid
@@ -34,12 +71,15 @@ graph TD
 1. **Standalone & Decoupled**:
    - Zero hardcoded dependency on other repositories or external MongoDB instances.
    - Any client frontend or administrative backend can consume standard REST APIs.
-2. **Contract-First & Type-Safe**:
-   - Every endpoint relies on Pydantic schemas for request validation and response contracts.
-3. **Clean Separation of Concerns**:
+2. **Canonical Domain Representation**:
+   - Explicit `UNKNOWN` state support preventing ungrounded assumptions (e.g., eligibility, baseline proficiencies).
+   - Traceable metadata across all entities via timezone-aware `SourceEvidence`.
+3. **Contract-First & Type-Safe**:
+   - Strictly validated Pydantic v2 domain models with bounds checking (coordinates, scores, NSQF levels 1–10).
+4. **Clean Separation of Concerns**:
    - `routes/`: Handles HTTP parameters, status codes, and delegates logic to services.
-   - `schemas/`: Defines domain payloads, validation rules, and output formats.
-   - `services/`: Encapsulates business logic, AI pipelines, and third-party integrations (e.g., Gemini, Bhashini).
+   - `schemas/`: Defines canonical domain models and API contracts.
+   - `services/`: Encapsulates business logic, AI interfaces, and integration adapters.
    - `rules/`: Static standards and policy criteria (NSQF levels, PM-AJAY eligibility).
    - `data/`: Ingestion loaders and repositories without direct DB coupling.
    - `core/`: Environment settings, custom exceptions, and logging configuration.

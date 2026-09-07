@@ -30,11 +30,11 @@ Base URL: `http://127.0.0.1:8000/v1`
 
 ### 2. Profile Extraction
 - **Endpoint**: `POST /v1/profile/extract`
-- **Description**: Extracts candidate profile information from raw conversational voice transcript.
+- **Description**: Extracts canonical `BeneficiaryProfile` and raw conversational skill phrases from input text/transcript.
 - **Request Body**:
 ```json
 {
-  "raw_text": "Mera naam Rajesh hai, 10th pass hoon, electrician ka thoda kaam jaanta hoon.",
+  "raw_text": "Mera naam Rajesh hai, 10th pass hoon, Varanasi mein electrician ka thoda kaam jaanta hoon.",
   "language": "hi",
   "source": "voice_interview"
 }
@@ -44,13 +44,21 @@ Base URL: `http://127.0.0.1:8000/v1`
 
 ### 3. Profile Validation
 - **Endpoint**: `POST /v1/profile/validate`
-- **Description**: Validates candidate demographic and educational eligibility against PM-AJAY and NSQF guidelines.
+- **Description**: Evaluates candidate eligibility against PM-AJAY criteria, strictly returning `UNKNOWN` when criteria cannot be verified.
 - **Request Body**:
 ```json
 {
   "profile": {
-    "demographics": { "community": "SC", "age": 22, "district": "Varanasi" },
-    "existing_skills": ["electrician", "wiring"]
+    "beneficiary_id": "BEN-2026-001",
+    "age": 22,
+    "gender": "male",
+    "community": "SC",
+    "education_level": "secondary_10th",
+    "location": {
+      "state": "Uttar Pradesh",
+      "district": "Varanasi"
+    },
+    "traditional_skills": ["electrical wiring"]
   },
   "scheme": "PM-AJAY"
 }
@@ -60,15 +68,18 @@ Base URL: `http://127.0.0.1:8000/v1`
 
 ### 4. Skilling & Livelihood Recommendations
 - **Endpoint**: `POST /v1/recommendations`
-- **Description**: Returns NSQF-aligned Qualification Packs matching the candidate's skills and aspirations.
+- **Description**: Generates canonical `Recommendation` records with multidimensional score breakdown (`skill_match_score`, `local_demand_score`, `eligibility_score`, `preference_alignment_score`) and skill gaps.
 - **Request Body**:
 ```json
 {
   "profile": {
-    "demographics": { "community": "SC" },
-    "existing_skills": ["mobile repairing"]
+    "beneficiary_id": "BEN-2026-001",
+    "community": "SC",
+    "education_level": "secondary_10th",
+    "traditional_skills": ["electrician helper"]
   },
-  "target_sector": "Electronics & Hardware",
+  "target_sector": "Green Jobs",
+  "preferred_pathway": "skill_training",
   "max_recommendations": 5
 }
 ```
@@ -91,7 +102,7 @@ Base URL: `http://127.0.0.1:8000/v1`
 
 ### 6. Opportunity Parsing
 - **Endpoint**: `POST /v1/opportunities/parse`
-- **Description**: Parses unstructured public circulars, PM-AJAY notices, or job postings into structured opportunities.
+- **Description**: Parses unstructured public notices into canonical `Opportunity` models with lifecycle states (`REPORTED`, `VERIFIED`, `ACTIVE`, `EXPIRED`, `FILLED`).
 - **Request Body**:
 ```json
 {
@@ -117,20 +128,17 @@ Base URL: `http://127.0.0.1:8000/v1`
 
 ### 8. Career Roadmap Generation
 - **Endpoint**: `POST /v1/roadmap`
-- **Description**: Generates an actionable milestone progression roadmap for a target NSQF role.
+- **Description**: Generates a canonical `Roadmap` with ordered `RoadmapStep` items, prerequisites, duration, and skill gaps.
 - **Request Body**:
 ```json
 {
   "profile": {
-    "demographics": { "community": "SC" },
-    "existing_skills": ["basic electrical wiring"]
+    "beneficiary_id": "BEN-2026-001",
+    "community": "SC",
+    "traditional_skills": ["basic electrical wiring"]
   },
-  "target_role": {
-    "qp_code": "ELE/Q1401",
-    "job_role": "Solar PV Installer",
-    "nsqf_level": 4,
-    "sector": "Electronics & Green Jobs"
-  },
+  "target_occupation_id": "OCC-SOL-001",
+  "target_pathway": "skill_training",
   "timeframe_months": 6
 }
 ```

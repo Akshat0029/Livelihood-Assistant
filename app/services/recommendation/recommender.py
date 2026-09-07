@@ -24,7 +24,7 @@ class RecommendationService(BaseRecommendationService):
         raise ServiceNotImplementedException(
             service_name="RecommendationService.get_recommendations",
             details={
-                "candidate_id": request.profile.candidate_id,
+                "beneficiary_id": request.profile.beneficiary_id,
                 "target_sector": request.target_sector,
             },
         )
