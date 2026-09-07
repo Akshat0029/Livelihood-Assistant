@@ -23,6 +23,16 @@ def test_profile_extract_validation_error(client: TestClient):
     assert response.status_code == 422
 
 
+def test_language_validation_rejects_unsupported_codes_before_provider_calls(client: TestClient):
+    profile = client.post("/v1/profile/extract", json={"raw_text": "bonjour", "language": "fr"})
+    interview = client.post("/v1/interview/turn", json={"user_text": "bonjour", "language": "fr"})
+    speech = client.post("/v1/speech/transcribe", json={
+        "audio_content_base64": "UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=",
+        "language_code": "fr", "audio_format": "wav",
+    })
+    assert profile.status_code == interview.status_code == speech.status_code == 422
+
+
 def test_interview_turn_endpoint_reports_unconfigured_extractor_safely(client: TestClient):
     response = client.post("/v1/interview/turn", json={"user_text": "मैं सिलाई करती हूँ", "language": "hi"})
     assert response.status_code == 503
@@ -32,6 +42,21 @@ def test_interview_turn_endpoint_reports_unconfigured_extractor_safely(client: T
 def test_interview_turn_validation_error(client: TestClient):
     response = client.post("/v1/interview/turn", json={"user_text": ""})
     assert response.status_code == 422
+
+
+def test_channel_interact_endpoint_validates_external_contract_before_provider_use(client: TestClient):
+    invalid = client.post("/v1/channel/interact", json={
+        "channel": "future_connector", "external_user_reference": "opaque", "language": "fr", "text": "bonjour",
+    })
+    assert invalid.status_code == 422
+
+    # A syntactically valid text interaction reaches the existing Phase 6
+    # provider boundary; it remains unconfigured in the test environment.
+    valid = client.post("/v1/channel/interact", json={
+        "channel": "future_connector", "external_user_reference": "opaque", "language": "hi", "text": "मैं सिलाई करती हूँ",
+    })
+    assert valid.status_code == 503
+    assert valid.json()["error"]["details"] == {"provider": "Gemini"}
 
 
 def test_livelihood_assessment_endpoint_works_without_llm_or_asr(client: TestClient):

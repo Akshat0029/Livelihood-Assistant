@@ -101,7 +101,7 @@ class LivelihoodInterviewService(BaseLivelihoodInterviewService):
             updates["education_level"] = extracted.education_level
         if extracted.employment_preference != EmploymentPreference.UNKNOWN:
             updates["employment_preference"] = extracted.employment_preference
-        if extracted.preferred_language:
+        if extracted.preferred_language and extracted.preferred_language != "unknown":
             updates["preferred_language"] = extracted.preferred_language
         if current.profile_source == ProfileSource.UNKNOWN and extracted.profile_source != ProfileSource.UNKNOWN:
             updates["profile_source"] = extracted.profile_source

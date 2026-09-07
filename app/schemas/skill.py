@@ -2,8 +2,9 @@
 
 from enum import Enum
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from app.schemas.common import SourceEvidence
+from app.schemas.language import normalize_language_code
 
 
 class SkillCategory(str, Enum):
@@ -58,6 +59,11 @@ class RawSkill(BaseModel):
     context: Optional[str] = Field(
         default=None, description="Surrounding contextual sentence or prompt snippet"
     )
+
+    @field_validator("language")
+    @classmethod
+    def validate_language(cls, value: Optional[str]) -> Optional[str]:
+        return normalize_language_code(value, allow_unknown=True) if value is not None else None
 
 
 class SkillNormalizationStatus(str, Enum):

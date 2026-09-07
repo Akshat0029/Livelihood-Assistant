@@ -20,6 +20,7 @@ from app.schemas.common import (
     SourceType,
     VerificationStatus,
 )
+from app.schemas.channel import ChannelAudioInput, ChannelInteractRequest, ChannelInteractResponse
 
 # Skills & Skill Gaps
 from app.schemas.skill import (
@@ -142,6 +143,9 @@ __all__ = [
     "SourceEvidence",
     "SourceType",
     "VerificationStatus",
+    "ChannelAudioInput",
+    "ChannelInteractRequest",
+    "ChannelInteractResponse",
     # Skills
     "GapStatus",
     "PriorityLevel",

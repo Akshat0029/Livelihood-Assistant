@@ -55,15 +55,25 @@ Only seed-backed evidence is used. Missing profile data produces `UNKNOWN` eligi
 
 ### Phase 6: LLM-assisted profile extraction
 
-`POST /v1/profile/extract` uses the environment-only `GEMINI_API_KEY` with Gemini JSON mode solely to extract stated beneficiary facts from multilingual text. Provider output is an untrusted payload: it is strictly Pydantic-validated, rejected on malformed or invalid values, and its raw skill phrases are normalized through Phase 4 before a canonical `BeneficiaryProfile` is returned. The response preserves the original text, raw skills, confidence, and model metadata. Gemini never produces recommendations or canonical opportunities, courses, eligibility, schemes, salaries, or market data.
+`POST /v1/profile/extract` uses the environment-only `GEMINI_API_KEY` with Gemini JSON mode solely to extract stated beneficiary facts from multilingual text. Provider output is an untrusted payload: it is strictly Pydantic-validated, rejected on malformed or invalid values, and its raw skill phrases are normalized through Phase 4 before a canonical `BeneficiaryProfile` is returned. The response preserves the original text, raw skills, confidence, and model metadata. Gemini never produces recommendations or canonical opportunities, courses, eligibility, schemes, salaries, or market data. Intake language codes are validated against the shared supported-language policy; unsupported codes are rejected and an untrusted `preferred_language` is rejected as provider output.
 
 ### Phase 7: Speech-to-text
 
-`POST /v1/speech/transcribe` accepts base64 WAV, MP3, OGG, or WebM audio, validates the declared type, decoded bytes, and configured size limit, then delegates to a replaceable ASR provider. The included local multilingual Whisper adapter requires an explicitly provisioned `ASR_MODEL_PATH`; it does not download models or datasets. Its transcript, selected/detected language, optional confidence, and processing metadata can be passed directly as the Phase 6 `raw_text` input.
+`POST /v1/speech/transcribe` accepts base64 WAV, MP3, OGG, or WebM audio, validates the declared type, decoded bytes, size limit, and shared supported-language code, then delegates to a replaceable ASR provider. The included local multilingual Whisper adapter requires an explicitly provisioned `ASR_MODEL_PATH`; it does not download models or datasets. Empty audio is rejected, no recognized speech returns an empty transcript with `no_speech_detected` and no detected language, and provider failures are surfaced without provider internals. Its transcript, selected/detected language, optional confidence, and processing metadata can be passed directly as the Phase 6 `raw_text` input.
 
 ### Phase 8: Conversational livelihood interview
 
-`POST /v1/interview/turn` is a state-light interview endpoint: callers send the prior `BeneficiaryProfile`, optional session ID, user turn, and explicitly unknown slots each time. It reuses Phase 6 extraction and Phase 4 normalization, merges only stated values, reports outstanding slots, and selects one deterministic, localized next question. It does not persist sessions, fabricate profile values, or generate recommendations.
+`POST /v1/interview/turn` is a state-light interview endpoint: callers send the prior `BeneficiaryProfile`, optional session ID, user turn, and explicitly unknown slots each time. It reuses Phase 6 extraction and Phase 4 normalization, merges only stated values, reports outstanding slots, and selects one deterministic, localized next question. Supported languages with no bundled question text use the explicitly labelled English fallback; unsupported inputs are rejected. `UNKNOWN` extraction values never overwrite known profile values. It does not persist sessions, fabricate profile values, or generate recommendations.
+
+### Phase 14: External-channel boundary
+
+`POST /v1/channel/interact` is a channel-agnostic adapter for a future WhatsApp or other external backend; it is not a WhatsApp integration. It accepts an opaque `channel`, caller-supplied opaque `external_user_reference`, optional `session_id`, validated language, and exactly one text or base64 audio input. Text is delegated to the existing interview and livelihood-assessment services; audio first passes through the existing ASR boundary. Audio URLs/references are explicitly rejected to avoid remote fetching. No-speech returns `no_speech_detected` without inventing a transcript or executing the profile pipeline. Caller identifiers are not converted to beneficiary/database IDs and are only echoed for correlation.
+
+```json
+{"channel":"whatsapp_future","external_user_reference":"opaque-session-user","session_id":"session-42","language":"hi","text":"मैं सिलाई करती हूँ"}
+```
+
+The successful response contains the same structured `interview` and `assessment` results returned by existing services, plus `channel`, `external_user_reference`, `session_id`, `language`, and a `status` of `completed`. External provider configuration failures retain their existing safe error responses; no external credentials, webhooks, message sending, or storage are included.
 
 ### Phase 9: Skill gaps and career roadmap
 

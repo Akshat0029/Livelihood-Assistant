@@ -1,7 +1,7 @@
 """Canonical beneficiary profile domain models and profile API contracts."""
 
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from app.schemas.common import (
     EducationLevel,
     EmploymentPreference,
@@ -12,6 +12,7 @@ from app.schemas.common import (
 )
 from app.schemas.eligibility import EligibilityResult
 from app.schemas.skill import RawSkill, Skill
+from app.schemas.language import normalize_language_code
 
 
 class EducationEntry(BaseModel):
@@ -118,6 +119,11 @@ class BeneficiaryProfile(BaseModel):
         default_factory=list, description="Verification documents or conversational records"
     )
 
+    @field_validator("preferred_language")
+    @classmethod
+    def validate_preferred_language(cls, value: str) -> str:
+        return normalize_language_code(value, allow_unknown=True)
+
 
 # API Request/Response Schemas
 class ProfileExtractRequest(BaseModel):
@@ -126,6 +132,18 @@ class ProfileExtractRequest(BaseModel):
     source: ProfileSource = Field(
         default=ProfileSource.VOICE_INTERVIEW, description="Origin of the input"
     )
+
+    @field_validator("raw_text")
+    @classmethod
+    def validate_raw_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("raw_text must not be empty")
+        return value
+
+    @field_validator("language")
+    @classmethod
+    def validate_language(cls, value: str) -> str:
+        return normalize_language_code(value)
 
 
 class ProfileExtractionMetadata(BaseModel):

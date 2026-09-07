@@ -3,11 +3,12 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from app.core.config import Settings, settings
 from app.core.exceptions import ProviderResponseException, ServiceNotImplementedException
 from app.schemas.common import EducationLevel, EmploymentPreference, Gender, GeographicLocation
+from app.schemas.language import normalize_language_code
 from app.schemas.profile import (
     BeneficiaryProfile,
     ProfileExtractRequest,
@@ -44,6 +45,11 @@ class ExtractionPayload(BaseModel):
     physical_constraints: Optional[str] = None
     preferred_language: Optional[str] = None
     extraction_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+
+    @field_validator("preferred_language")
+    @classmethod
+    def validate_preferred_language(cls, value: Optional[str]) -> Optional[str]:
+        return normalize_language_code(value, allow_unknown=True) if value is not None else None
 
 
 class BaseProfileExtractionService(ABC):

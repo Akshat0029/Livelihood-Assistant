@@ -3,8 +3,9 @@
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
+from app.schemas.language import normalize_language_code
 from app.schemas.profile import BeneficiaryProfile
 
 
@@ -40,6 +41,11 @@ class InterviewTurnRequest(BaseModel):
         default_factory=list,
         description="Slots the beneficiary explicitly declined or reported as unknown.",
     )
+
+    @field_validator("language")
+    @classmethod
+    def validate_language(cls, value: str) -> str:
+        return normalize_language_code(value)
 
 
 class InterviewTurnResponse(BaseModel):

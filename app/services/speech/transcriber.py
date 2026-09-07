@@ -5,7 +5,8 @@ import binascii
 from abc import ABC, abstractmethod
 
 from app.core.config import Settings, settings
-from app.core.exceptions import ValidationException
+from app.core.exceptions import ProviderConfigurationException, ProviderResponseException, ValidationException
+from app.schemas.language import normalize_detected_language
 from app.schemas.speech import SpeechProcessingMetadata, SpeechTranscribeRequest, SpeechTranscribeResponse
 from app.services.speech.providers import BaseASRProvider
 
@@ -52,11 +53,25 @@ class SpeechTranscriptionService(BaseSpeechTranscriptionService):
 
     async def transcribe(self, request: SpeechTranscribeRequest) -> SpeechTranscribeResponse:
         audio_bytes = self._decode_audio(request)
-        result = await self._provider.transcribe(audio_bytes, request.audio_format, request.language_code)
+        try:
+            result = await self._provider.transcribe(audio_bytes, request.audio_format, request.language_code)
+        except (ProviderConfigurationException, ProviderResponseException):
+            raise
+        except Exception:
+            raise ProviderResponseException(self._provider.provider_name) from None
+        if not isinstance(result.transcript, str):
+            raise ProviderResponseException(self._provider.provider_name)
         transcript = result.transcript.strip()
+        # A selected language is useful fallback metadata only when speech was
+        # actually returned. Empty recognition output must not claim detection.
+        detected_language = (
+            normalize_detected_language(result.detected_language)
+            if result.detected_language is not None and transcript
+            else (request.language_code if transcript else None)
+        )
         return SpeechTranscribeResponse(
             transcript=transcript,
-            detected_language=result.detected_language or request.language_code,
+            detected_language=detected_language,
             confidence=result.confidence,
             duration_seconds=result.duration_seconds,
             processing_metadata=SpeechProcessingMetadata(

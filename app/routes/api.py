@@ -11,6 +11,7 @@ from app.routes import (
     roadmap,
     interview,
     livelihood,
+    channel,
 )
 
 api_router = APIRouter()
@@ -25,3 +26,4 @@ api_router.include_router(market.router)
 api_router.include_router(roadmap.router)
 api_router.include_router(interview.router)
 api_router.include_router(livelihood.router)
+api_router.include_router(channel.router)

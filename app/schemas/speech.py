@@ -3,6 +3,8 @@
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from app.schemas.language import normalize_language_code
+
 
 _SUPPORTED_FORMATS = {"wav", "mp3", "ogg", "webm"}
 
@@ -32,6 +34,11 @@ class SpeechTranscribeRequest(BaseModel):
         if value not in _SUPPORTED_FORMATS:
             raise ValueError(f"audio_format must be one of: {', '.join(sorted(_SUPPORTED_FORMATS))}")
         return value
+
+    @field_validator("language_code")
+    @classmethod
+    def validate_language_code(cls, value: str) -> str:
+        return normalize_language_code(value)
 
     @model_validator(mode="after")
     def validate_audio_source(self) -> "SpeechTranscribeRequest":
