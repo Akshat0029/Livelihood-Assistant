@@ -1,5 +1,11 @@
 """Schemas package index exporting all canonical domain models and API contracts."""
 
+# Phase 3 — Ontology, Provenance, Location, Provider
+from app.schemas.ontology import DataClassification, OntologyRecord
+from app.schemas.provenance import DataSourceRecord, SourcePrecedence
+from app.schemas.location import LocationRecord
+from app.schemas.provider import AccreditationStatus, ProviderType, TrainingProvider
+
 # Common & Metadata
 from app.schemas.common import (
     APIResponse,
@@ -96,6 +102,17 @@ from app.schemas.health import HealthResponse
 from app.schemas.speech import SpeechTranscribeRequest, SpeechTranscribeResponse
 
 __all__ = [
+    # Phase 3 — Ontology & Provenance
+    "DataClassification",
+    "OntologyRecord",
+    "DataSourceRecord",
+    "SourcePrecedence",
+    # Phase 3 — Location
+    "LocationRecord",
+    # Phase 3 — Training Provider
+    "AccreditationStatus",
+    "ProviderType",
+    "TrainingProvider",
     # Common
     "APIResponse",
     "EducationLevel",
