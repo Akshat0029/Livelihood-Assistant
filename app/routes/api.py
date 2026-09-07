@@ -9,6 +9,7 @@ from app.routes import (
     opportunities,
     market,
     roadmap,
+    interview,
 )
 
 api_router = APIRouter()
@@ -21,3 +22,4 @@ api_router.include_router(speech.router)
 api_router.include_router(opportunities.router)
 api_router.include_router(market.router)
 api_router.include_router(roadmap.router)
+api_router.include_router(interview.router)

@@ -61,6 +61,10 @@ Only seed-backed evidence is used. Missing profile data produces `UNKNOWN` eligi
 
 `POST /v1/speech/transcribe` accepts base64 WAV, MP3, OGG, or WebM audio, validates the declared type, decoded bytes, and configured size limit, then delegates to a replaceable ASR provider. The included local multilingual Whisper adapter requires an explicitly provisioned `ASR_MODEL_PATH`; it does not download models or datasets. Its transcript, selected/detected language, optional confidence, and processing metadata can be passed directly as the Phase 6 `raw_text` input.
 
+### Phase 8: Conversational livelihood interview
+
+`POST /v1/interview/turn` is a state-light interview endpoint: callers send the prior `BeneficiaryProfile`, optional session ID, user turn, and explicitly unknown slots each time. It reuses Phase 6 extraction and Phase 4 normalization, merges only stated values, reports outstanding slots, and selects one deterministic, localized next question. It does not persist sessions, fabricate profile values, or generate recommendations.
+
 ---
 
 ## 🏗 Repository Structure

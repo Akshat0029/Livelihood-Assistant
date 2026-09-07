@@ -23,6 +23,17 @@ def test_profile_extract_validation_error(client: TestClient):
     assert response.status_code == 422
 
 
+def test_interview_turn_endpoint_reports_unconfigured_extractor_safely(client: TestClient):
+    response = client.post("/v1/interview/turn", json={"user_text": "मैं सिलाई करती हूँ", "language": "hi"})
+    assert response.status_code == 503
+    assert response.json()["error"]["details"] == {"provider": "Gemini"}
+
+
+def test_interview_turn_validation_error(client: TestClient):
+    response = client.post("/v1/interview/turn", json={"user_text": ""})
+    assert response.status_code == 422
+
+
 def test_profile_validate_endpoint(client: TestClient):
     """Verify POST /v1/profile/validate handles valid payload and returns 501 placeholder."""
     payload = {
