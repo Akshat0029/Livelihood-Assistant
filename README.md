@@ -61,6 +61,23 @@ Only seed-backed evidence is used. Missing profile data produces `UNKNOWN` eligi
 
 `POST /v1/speech/transcribe` accepts base64 WAV, MP3, OGG, or WebM audio, validates the declared type, decoded bytes, size limit, and shared supported-language code, then delegates to a replaceable ASR provider. The included local multilingual Whisper adapter requires an explicitly provisioned `ASR_MODEL_PATH`; it does not download models or datasets. Empty audio is rejected, no recognized speech returns an empty transcript with `no_speech_detected` and no detected language, and provider failures are surfaced without provider internals. Its transcript, selected/detected language, optional confidence, and processing metadata can be passed directly as the Phase 6 `raw_text` input.
 
+### Jharkhand language capability registry
+
+Language selection is governed by an explicit registry in `app/schemas/language.py`. Selecting a language only guarantees that text is accepted and preserved; it does not claim translation, interview localization, LLM extraction quality, ASR, or TTS. The six Jharkhand identifiers below are ISO 639-3 identifiers. `sck` is the ISO identifier used for Sadri/Nagpuri contexts, so caller interfaces should confirm the speaker's preferred name. No native-language question strings or skill aliases were added without community/linguistic verification.
+
+| Language | Identifier | Text input | Interview | Profile extraction | ASR | TTS | Fallback | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Hindi | `hi` | Yes | Localized | Existing provider boundary | Whisper hint; runtime model required | No | — | Supported |
+| English | `en` | Yes | Localized | Existing provider boundary | Whisper hint; runtime model required | No | — | Supported |
+| Santali | `sat` | Preserved | Hindi fallback | Routed only; not runtime-verified | Unsupported by current Whisper adapter | No | Hindi | Fallback |
+| Mundari | `unr` | Preserved | Hindi fallback | Routed only; not runtime-verified | Unsupported by current Whisper adapter | No | Hindi | Fallback |
+| Kurukh / Oraon | `kru` | Preserved | Hindi fallback | Routed only; not runtime-verified | Unsupported by current Whisper adapter | No | Hindi | Fallback |
+| Ho | `hoc` | Preserved | Hindi fallback | Routed only; not runtime-verified | Unsupported by current Whisper adapter | No | Hindi | Fallback |
+| Nagpuri / Nagpuria | `sck` | Preserved | Hindi fallback | Routed only; not runtime-verified | Unsupported by current Whisper adapter | No | Hindi | Fallback |
+| Khortha | `kht` | Preserved | Hindi fallback | Routed only; not runtime-verified | Unsupported by current Whisper adapter | No | Hindi | Fallback |
+
+The government Census language survey identifies these as Jharkhand language communities, but it does not validate this application's translations or speech quality. The current adapter uses local Faster-Whisper, whose language argument must be a supported Whisper token; the registry rejects the six local-language ASR requests before a provider is called. A future evaluated provider/model can change only the relevant registry capability and adapter mapping after runtime verification. No model is downloaded automatically.
+
 ### Phase 8: Conversational livelihood interview
 
 `POST /v1/interview/turn` is a state-light interview endpoint: callers send the prior `BeneficiaryProfile`, optional session ID, user turn, and explicitly unknown slots each time. It reuses Phase 6 extraction and Phase 4 normalization, merges only stated values, reports outstanding slots, and selects one deterministic, localized next question. Supported languages with no bundled question text use the explicitly labelled English fallback; unsupported inputs are rejected. `UNKNOWN` extraction values never overwrite known profile values. It does not persist sessions, fabricate profile values, or generate recommendations.

@@ -57,6 +57,9 @@ class SpeechProcessingMetadata(BaseModel):
     audio_format: str
     input_bytes: int = Field(ge=0)
     selected_language: Optional[str] = None
+    requested_language: Optional[str] = None
+    language_capability_status: Optional[str] = None
+    fallback_language: Optional[str] = None
 
 
 class SpeechTranscribeResponse(BaseModel):

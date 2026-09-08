@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from app.schemas.common import EducationLevel, EmploymentPreference, Gender, ProfileSource
 from app.schemas.interview import InterviewQuestion, InterviewSlot, InterviewTurnRequest, InterviewTurnResponse
+from app.schemas.language import LanguageCapabilityStatus, get_language_capability
 from app.schemas.profile import BeneficiaryProfile, ProfileExtractRequest
 from app.schemas.skill import Skill
 from app.services.ai.extractor import BaseProfileExtractionService
@@ -135,9 +136,16 @@ class LivelihoodInterviewService(BaseLivelihoodInterviewService):
 
     @staticmethod
     def _question(slot: InterviewSlot, language: str) -> InterviewQuestion:
-        language_key = language.casefold().split("-")[0]
-        localized = _QUESTION_TEXT.get(language_key, _QUESTION_TEXT["en"])
-        return InterviewQuestion(slot=slot, text=localized[slot], language=language_key if language_key in _QUESTION_TEXT else "en")
+        capability = get_language_capability(language)
+        if capability.interview_supported and capability.internal_code in _QUESTION_TEXT:
+            localized_language = capability.internal_code
+            return InterviewQuestion(slot=slot, text=_QUESTION_TEXT[localized_language][slot], language=localized_language)
+        fallback_language = capability.fallback_language or "en"
+        return InterviewQuestion(
+            slot=slot, text=_QUESTION_TEXT[fallback_language][slot], language=fallback_language,
+            requested_language=capability.internal_code, fallback_language=fallback_language,
+            used_fallback=True, localization_status=LanguageCapabilityStatus.FALLBACK.value,
+        )
 
     async def process_turn(self, request: InterviewTurnRequest) -> InterviewTurnResponse:
         extraction = await self._extraction_service.extract_profile(ProfileExtractRequest(

@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from app.core.config import Settings, settings
 from app.core.exceptions import ProviderResponseException, ServiceNotImplementedException
 from app.schemas.common import EducationLevel, EmploymentPreference, Gender, GeographicLocation
-from app.schemas.language import normalize_language_code
+from app.schemas.language import get_language_capability, normalize_language_code
 from app.schemas.profile import (
     BeneficiaryProfile,
     ProfileExtractRequest,
@@ -161,6 +161,7 @@ Use null or unknown when not explicit. Do not infer or create jobs, salaries, co
             max_travel_distance_km=payload.max_travel_distance_km, physical_constraints=payload.physical_constraints,
             preferred_language=payload.preferred_language or request.language, profile_source=request.source,
         )
+        capability = get_language_capability(request.language)
         return ProfileExtractResponse(
             extracted_profile=profile, original_text=request.raw_text, raw_skills_detected=raw_skills,
             confidence_score=payload.extraction_confidence,
@@ -168,6 +169,9 @@ Use null or unknown when not explicit. Do not infer or create jobs, salaries, co
             extraction_metadata=ProfileExtractionMetadata(
                 provider=self._provider.provider_name, model=self._provider.model_name,
                 model_version=self._model_version, input_language=request.language,
+                normalized_language=capability.internal_code,
+                language_capability_status=capability.capability_status.value,
+                fallback_language=capability.fallback_language,
             ),
         )
 

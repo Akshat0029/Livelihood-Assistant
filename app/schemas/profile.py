@@ -153,6 +153,9 @@ class ProfileExtractionMetadata(BaseModel):
     model: str
     model_version: str
     input_language: str
+    normalized_language: str
+    language_capability_status: str
+    fallback_language: Optional[str] = None
 
 
 class ProfileExtractResponse(BaseModel):

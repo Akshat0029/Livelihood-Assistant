@@ -21,6 +21,7 @@ from app.schemas.common import (
     VerificationStatus,
 )
 from app.schemas.channel import ChannelAudioInput, ChannelInteractRequest, ChannelInteractResponse
+from app.schemas.language import LanguageCapability, LanguageCapabilityStatus
 
 # Skills & Skill Gaps
 from app.schemas.skill import (
@@ -146,6 +147,8 @@ __all__ = [
     "ChannelAudioInput",
     "ChannelInteractRequest",
     "ChannelInteractResponse",
+    "LanguageCapability",
+    "LanguageCapabilityStatus",
     # Skills
     "GapStatus",
     "PriorityLevel",

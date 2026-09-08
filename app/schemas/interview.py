@@ -28,6 +28,10 @@ class InterviewQuestion(BaseModel):
     slot: InterviewSlot
     text: str
     language: str
+    requested_language: Optional[str] = None
+    fallback_language: Optional[str] = None
+    used_fallback: bool = False
+    localization_status: str = "supported"
 
 
 class InterviewTurnRequest(BaseModel):

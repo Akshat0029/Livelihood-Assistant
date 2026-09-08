@@ -33,6 +33,32 @@ def test_language_validation_rejects_unsupported_codes_before_provider_calls(cli
     assert profile.status_code == interview.status_code == speech.status_code == 422
 
 
+def test_jharkhand_registered_text_paths_and_asr_capability_boundary(client: TestClient):
+    # Santali is a registered text identifier. Optional Gemini remains
+    # unconfigured, so text routes reach their provider boundary safely.
+    profile = client.post("/v1/profile/extract", json={"raw_text": "[local text]", "language": "sat"})
+    interview = client.post("/v1/interview/turn", json={"user_text": "[local text]", "language": "sat"})
+    channel = client.post("/v1/channel/interact", json={
+        "channel": "future_connector", "external_user_reference": "opaque", "language": "sat", "text": "[local text]",
+    })
+    assert profile.status_code == interview.status_code == channel.status_code == 503
+    assert profile.json()["error"]["details"] == {"provider": "Gemini"}
+
+    # Voice is deliberately not claimed for this local language by the current
+    # Faster-Whisper adapter; validation happens before model/provider use.
+    speech = client.post("/v1/speech/transcribe", json={
+        "audio_content_base64": "UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=",
+        "language_code": "sat", "audio_format": "wav",
+    })
+    assert speech.status_code == 422
+    assert speech.json()["error"]["details"]["asr_status"] == "unsupported"
+
+    assessment = client.post("/v1/livelihood/assess", json={
+        "profile": {"preferred_language": "sat", "education_level": "primary"},
+    })
+    assert assessment.status_code == 200
+
+
 def test_interview_turn_endpoint_reports_unconfigured_extractor_safely(client: TestClient):
     response = client.post("/v1/interview/turn", json={"user_text": "मैं सिलाई करती हूँ", "language": "hi"})
     assert response.status_code == 503

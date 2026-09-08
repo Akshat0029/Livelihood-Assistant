@@ -14,6 +14,7 @@ from typing import Optional
 
 from app.core.config import Settings, settings
 from app.core.exceptions import ProviderConfigurationException, ProviderResponseException
+from app.schemas.language import get_language_capability
 
 
 @dataclass(frozen=True)
@@ -45,6 +46,10 @@ class WhisperASRProvider(BaseASRProvider):
         self.model_name = config.ASR_MODEL_VERSION
 
     async def transcribe(self, audio_bytes: bytes, audio_format: str, language_hint: Optional[str]) -> ASRResult:
+        if language_hint:
+            capability = get_language_capability(language_hint)
+            if not capability.asr_supported or capability.asr_provider_code is None:
+                raise ProviderResponseException("Whisper ASR")
         if not self._model_path or not Path(self._model_path).exists():
             raise ProviderConfigurationException("Whisper ASR")
         return await asyncio.to_thread(self._transcribe_sync, audio_bytes, audio_format, language_hint)

@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 from app.core.config import Settings, settings
 from app.core.exceptions import ProviderConfigurationException, ProviderResponseException, ValidationException
-from app.schemas.language import normalize_detected_language
+from app.schemas.language import get_language_capability, normalize_detected_language
 from app.schemas.speech import SpeechProcessingMetadata, SpeechTranscribeRequest, SpeechTranscribeResponse
 from app.services.speech.providers import BaseASRProvider
 
@@ -53,8 +53,18 @@ class SpeechTranscriptionService(BaseSpeechTranscriptionService):
 
     async def transcribe(self, request: SpeechTranscribeRequest) -> SpeechTranscribeResponse:
         audio_bytes = self._decode_audio(request)
+        capability = get_language_capability(request.language_code)
+        if not capability.asr_supported or capability.asr_provider_code is None:
+            raise ValidationException(
+                "ASR is not supported for the requested language by the configured provider.",
+                details={
+                    "language": capability.internal_code,
+                    "asr_status": "unsupported",
+                    "fallback_language": capability.fallback_language,
+                },
+            )
         try:
-            result = await self._provider.transcribe(audio_bytes, request.audio_format, request.language_code)
+            result = await self._provider.transcribe(audio_bytes, request.audio_format, capability.asr_provider_code)
         except (ProviderConfigurationException, ProviderResponseException):
             raise
         except Exception:
@@ -80,6 +90,9 @@ class SpeechTranscriptionService(BaseSpeechTranscriptionService):
                 audio_format=request.audio_format,
                 input_bytes=len(audio_bytes),
                 selected_language=request.language_code,
+                requested_language=request.language_code,
+                language_capability_status=capability.capability_status.value,
+                fallback_language=capability.fallback_language,
             ),
             status="completed" if transcript else "no_speech_detected",
         )
